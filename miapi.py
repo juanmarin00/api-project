@@ -3,8 +3,8 @@ from flask import Flask, request
 import markdown.extensions.fenced_code
 import random
 import json
-import tools.getdata as get
-import tools.postdata as pos
+import src.getdata as get
+import src.postdata as pos
 
 app = Flask(__name__)
 
@@ -17,64 +17,108 @@ def index():
 
 
 
-@app.route("/ejemplo1")
-def datitos():
-    diccionario = { "Nombre" : "Fer",
-    "Amigos" : ["Dobby", "Ras","Sheriff","Ignacio"],
-    "Edad" : 28
-    }
-    return diccionario
+#######################GET endpoints:#######################
 
-@app.route("/tiraeldado")
-def dados():
-    dato = str(random.choice(range(1,7)))
-    dato_pars = { "Has sacado un " : f"{dato}"
-
-    }
-    return f"{dato}"
-
+#Get all lines of a character
 @app.route("/frases/<personaje>")
-def frasepersonaje(personaje):
+def character_lines(personaje):
     #la función get.pensajepersonaje viene de tools getdata.py
-    frases = get.mensajepersonaje(personaje)
+    frases = get.get_character_lines(personaje)
     return json.dumps(frases)
 
+#Get all episodes in a season
+@app.route("/season/<season_number>")
+def season_episodes(season_number):
+    #la función get.pensajepersonaje viene de tools getdata.py
+    episodes = get.get_season_episodes(season_number)
+    return json.dumps(episodes)
 
-"""
-Revisad esta documentación para métodos post y tal
-https://flask.palletsprojects.com/en/1.1.x/quickstart/#the-request-object
-"""
+#Get all characters in an episode
+@app.route("/characters_episode/<ep_number>")
+def episode_characters(ep_number):
+    #la función get.pensajepersonaje viene de tools getdata.py
+    characters = get.get_all_characters_from_episode(ep_number)
+    return json.dumps(characters)
 
-@app.route("/nuevafrase",methods=["POST"])
+
+#Get all the lines in an episode by all characters
+@app.route("/lines_episode/<ep_number>")
+def get_char_lines_ep(ep_number):
+    #la función get.pensajepersonaje viene de tools getdata.py
+    lines = get.get_all_lines_episode(ep_number)
+    return json.dumps(lines)
+
+
+#Get all the lines in a season
+@app.route("/lines_season/<seasom_number>")
+def get_all_lines_season(seasom_number):
+    #la función get.pensajepersonaje viene de tools getdata.py
+    lines = get.get_all_lines_season(seasom_number)
+    return json.dumps(lines)
+
+
+#Get character sentiment throughout the series
+@app.route("/character_sentiment/<character>")
+def get_character_sentiment(character):
+    #la función get.pensajepersonaje viene de tools getdata.py
+    sentiment = get.average_sentiment_character(character)
+    return json.dumps(sentiment)
+
+
+#Get sentiment throughout an episode
+@app.route("/episode_sentiment/<episode_num>")
+def get_episode_sentiment(episode_num):
+    #la función get.pensajepersonaje viene de tools getdata.py
+    sentiment = get.average_sentiment_episode(episode_num)
+    return json.dumps(sentiment)
+
+
+
+
+
+#######################POSt endpoints:#######################
+
+
+#Insert a line in the lines collection
+@app.route("/newline",methods=["POST"])
 def insertamensaje():
-    escena = request.form.get("scene")
-    personaje = request.form.get("character_name")
-    frase = request.form.get("dialogue")
-    pos.insertamensaje(escena,personaje,frase)
-    return "Mensaje introducido correctamente en la base de datos"
+    episode = request.form.get("episode")
+    season = request.form.get("season")
+    character_name = request.form.get("character_name")
+    line = request.form.get("dialogue")
+    pos.insertLine(episode, character_name, line, season)
+    return "Line correctly introduced in database"
+
+
+#Insert a new character in the characters collection
+@app.route("/newcharacter",methods=["POST"])
+def insert_character():
+    character_name = request.form.get("character_name")
+    lines = request.form.get("lines")
+    pos.insertCharacter(character_name, lines)
+    return "Episode correctly introduced in database"
+
+
+#Insert a new episode in the episode collection
+@app.route("/newepisode",methods=["POST"])
+def insert_epi():
+    episode_id = request.form.get("episode_id")
+    characters = request.form.get("characters")
+    pos.insertEpisode(episode_id, characters)
+    return "Episode correctly introduced in database"
+
+
+#Insert a new season in the seasons collection
+@app.route("/newseason",methods=["POST"])
+def insert_season():
+    season_num = request.form.get("season_num")
+    episodes = request.form.get("episodes")
+    pos.insertSeason(season_num, episodes)
+    return "Line correctly introduced in database"
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#Run our app
 app.run(debug=True)
