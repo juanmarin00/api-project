@@ -36,9 +36,12 @@ Will return character sentiment throughout the series
 Will return the sentiment throughout an episode
 
 
-Extraemos todas las frases que tenemos de un usuario en la base de datos
+# Repo Organization:
+src: Contains the get, post files and  modify_data.py will take the data from the data folder and import it into MongoDB
 
-```
-url_frases = "http://localhost:5000/frases/"
-person = "Albus Dumbledore"
-```
+data: Contains CSVs with the script from the office where every row is a line from the script
+
+miapi.py: The file you need to run for the api to work
+
+notebooks: contains test_api.ipynb notebook used to test all api endpoints
+
